@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 landsat_ndvi.py
 ---------------
@@ -12,13 +14,7 @@ Usage:
 
 import ee
 import datetime
-
-# Initialize Earth Engine using your stored credentials
-try:
-    ee.Initialize()
-except Exception as e:
-    print("Please run 'earthengine authenticate' if you haven't already.")
-    raise e
+import sys
 
 # ------------------------ USER CONFIGURATIONS ------------------------
 
@@ -45,11 +41,8 @@ LANDSAT_COLLECTIONS = {
     'LANDSAT_7':  'LANDSAT/LE07/C02/T1_L2',  # Available 1999 - present
     'LANDSAT_8':  'LANDSAT/LC08/C02/T1_L2',  # Available 2013 - present
 }
-# NOTE: For years < 1999, you'll only find L5 data; 
-#       for 1999-2012, L5 & L7 overlap; 
-#       for 2013+, L7 & L8 overlap.
 
-# For each collection, define how to map the RED and NIR bands to a consistent naming:
+# Define sensor-specific band names
 SENSOR_BANDS = {
     'LANDSAT_5': {'nir': 'SR_B4', 'red': 'SR_B3', 'qa': 'QA_PIXEL'},
     'LANDSAT_7': {'nir': 'SR_B4', 'red': 'SR_B3', 'qa': 'QA_PIXEL'},
@@ -65,7 +58,7 @@ def mask_clouds(image, sensor_key):
     """
     qa = image.select(SENSOR_BANDS[sensor_key]['qa'])
     
-    # Bits 3 = cloud shadow, 5 = cloud in C2 'QA_PIXEL'
+    # Bits 3 = cloud shadow, 5 = cloud
     cloud_shadow_bit_mask = 1 << 3
     clouds_bit_mask = 1 << 5
     
@@ -89,24 +82,25 @@ def get_landsat_collection(sensor_key, start_date, end_date):
     within the given date range.
     """
     collection_id = LANDSAT_COLLECTIONS[sensor_key]
-    collection = (ee.ImageCollection(collection_id)
-                  .filterDate(start_date, end_date)
-                  .map(lambda img: mask_clouds(img, sensor_key))
-                  .map(lambda img: add_ndvi(img, sensor_key))
-                 )
-    return collection
+    try:
+        collection = (ee.ImageCollection(collection_id)
+                      .filterDate(start_date, end_date)
+                      .map(lambda img: mask_clouds(img, sensor_key))
+                      .map(lambda img: add_ndvi(img, sensor_key))
+                     )
+        return collection
+    except Exception as e:
+        print(f"Error fetching collection {sensor_key} for dates {start_date} to {end_date}: {e}")
+        return ee.ImageCollection([])
 
 def combine_collections(start_date, end_date):
     """
     Combine L5, L7, and L8 collections for the date range,
     as some years might have multiple sensors operational.
     """
-    # Decide which sensors to include based on availability in that time
-    # (Simple approach: just include all, though older ones might have no data for certain years)
     combined = ee.ImageCollection([])
     
     for sensor_key in LANDSAT_COLLECTIONS.keys():
-        # Attempt to merge data from each sensor
         sensor_coll = get_landsat_collection(sensor_key, start_date, end_date)
         combined = combined.merge(sensor_coll)
     
@@ -121,7 +115,14 @@ def export_ndvi(year):
     start_date = f"{year}-01-01"
     end_date   = f"{year}-12-31"
     
+    print(f"Processing year: {year}")
+    
     collection = combine_collections(start_date, end_date)
+    
+    # Check if collection is empty
+    if collection.size().getInfo() == 0:
+        print(f"No images found for year {year}. Skipping export.")
+        return
     
     # Create median composite focusing on NDVI band
     median_image = collection.median().select(['NDVI'])
@@ -141,18 +142,42 @@ def export_ndvi(year):
         crs=CRS,
         maxPixels=1e13  # Increase if dealing w/ large areas
     )
-    task.start()
-    print(f"Export to Google Drive started for year {year}...")
+    
+    try:
+        task.start()
+        print(f"Export to Google Drive started for year {year}.")
+    except Exception as e:
+        print(f"Failed to start export for year {year}: {e}")
 
 def main():
     print("Starting NDVI export script...")
-
+    
     # Loop through specified years
     for y in START_YEARS:
-        # If using older data (pre-1984) or post-2021, you may need to adapt or skip
+        # Handle pre-1984 data (only L5 available)
+        if y < 1984:
+            print(f"Year {y} is before Landsat 5 availability. Skipping.")
+            continue
+        
+        # Handle data availability based on sensor timelines
+        if y <= 2012:
+            sensors = ['LANDSAT_5']
+        elif y <= 2013:
+            sensors = ['LANDSAT_5', 'LANDSAT_7']
+        else:
+            sensors = ['LANDSAT_7', 'LANDSAT_8']
+        
         export_ndvi(y)
     
     print("All exports have been triggered. Check your GEE Tasks panel or monitor logs.")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ee.ee_exception.EEException as ee_e:
+        print(f"Earth Engine Error: {ee_e}")
+        print("Ensure your Earth Engine account is approved and authenticated.")
+        sys.exit(1)
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        sys.exit(1)
