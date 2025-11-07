@@ -1,19 +1,45 @@
-# ghost-forest-management
+# Ghost Forest Management
 
-## objective
+## Overview
+Ghost forests across coastal North Carolina reveal the cascading impacts of sea-level rise, saltwater intrusion, and changing land use on once-thriving maritime forests. This repository supports research focused on the Albemarle and Pamlico Sounds region, where remote-sensing analyses and management scenarios inform conservation and adaptation planning. The workflow combines Python-based geospatial processing with interactive storytelling to surface the ecological, cultural, and policy dimensions of these landscape transitions. 【F:2_Scripts/GEE_Python/landsat_nvdi.py†L1-L120】【d0b753†L1-L13】
 
-We want to evaluate different management strategies (thin-layer placement, living shorelines, salt-tolerant species introduction, hydrological barriers, etc.)
+## Data Sources
+- **Landsat Surface Reflectance (Collections 5, 7, 8):** Retrieved through the Google Earth Engine (GEE) Python API to build long-term NDVI composites that capture vegetation change from 1985 to the present. 【F:2_Scripts/GEE_Python/landsat_nvdi.py†L21-L99】
+- **Derived NDVI Time Series:** Median annual composites clipped to the Albemarle Peninsula to quantify vegetation vigor, forest loss, and marsh transition hotspots that appear in the StoryMap narratives. 【F:2_Scripts/GEE_Python/landsat_nvdi.py†L61-L132】【d0b753†L1-L13】
+- **Historical and Community Context:** Qualitative accounts, archival imagery, and local histories referenced in the Ghost (Forest) Stories ArcGIS StoryMap to ground quantitative trends in lived experience. 【d0b753†L1-L13】
+- **Management Strategy Profiles:** Scenario descriptions for thin-layer sediment placement, salt-tolerant plantings, living shorelines, and hydrologic barriers synthesized for decision support. 【a2be90†L1-L13】
 
-## geographic extent
+## Methodology
+1. **Data Ingestion:** Authenticate with Google Earth Engine and assemble Landsat collections by year, masking clouds and harmonizing band names across sensors. 【F:2_Scripts/GEE_Python/landsat_nvdi.py†L33-L99】
+2. **NDVI Composite Generation:** Calculate median NDVI mosaics for user-specified years, clip to the Albemarle Peninsula, and queue Drive exports for downstream analysis. 【F:2_Scripts/GEE_Python/landsat_nvdi.py†L99-L143】
+3. **Interpretation & Storytelling:** Integrate NDVI outputs with field observations, community interviews, and historical research showcased in the Ghost (Forest) Stories StoryMap to highlight environmental change drivers and community responses. 【d0b753†L1-L13】【a2be90†L1-L13】
 
-Currently we are limiting our research to the Albemarle Peninsula, potentially divided by watersheds or management units for finer analysis
+## Results
+- **Landscape Change Detection:** NDVI composites reveal the expansion of marshes and decline of canopy vigor, aligning with StoryMap imagery showing toppled trees and salt-scarred stands along the Albemarle Peninsula. 【F:2_Scripts/GEE_Python/landsat_nvdi.py†L99-L143】【d0b753†L1-L13】
+- **Management Scenario Insights:** StoryMap sections distill quantitative outputs into actionable guidance on sediment nourishment, salt-tolerant planting schemes, and shoreline stabilization to bolster ecosystem resilience. 【a2be90†L1-L13】
 
-## time horizon
+### ArcGIS StoryMap
+Explore the companion StoryMap, **[Ghost (Forest) Stories](https://storymaps.arcgis.com/stories/eabc31ae132e42149e7cf1800c5985a3)**, for interactive maps, historical timelines, and management strategy spotlights that contextualize the NDVI analyses and connect them to stakeholder narratives. 【d0b753†L1-L13】【a2be90†L1-L13】
 
-Historical Analysis: 1985 - present (to establish baselines for current analysis)
-Future Scenarios: Next 10-20 years (to support decisions in the future about certain management strategies)
+## Next Steps
+- Incorporate salinity, hydrology, and land-use datasets to pair NDVI trends with abiotic drivers of forest decline.
+- Expand time-series modeling to include predictive scenarios that estimate future ghost forest extent under alternative management strategies.
+- Automate data pipelines for StoryMap updates so new analyses and community feedback seamlessly refresh the narrative content.
+- Collaborate with regional partners to validate model outputs and co-design adaptation investments for vulnerable communities.
 
-## choices
+## Quickstart
+**What the script does:** `2_Scripts/GEE_Python/landsat_nvdi.py` authenticates with Google Earth Engine, merges Landsat 5/7/8 collections, computes annual median NDVI composites for the Albemarle Peninsula, and exports them to Google Drive for mapping and scenario evaluation. 【F:2_Scripts/GEE_Python/landsat_nvdi.py†L1-L143】
 
-Effectiveness metric: We will use a combined approach incorporating both direct forest coverage to account for spacial extent as well as NVDI (vegetation index) to account for vegetation quality. We will use this to quantify ghost forest progression.
+**Prerequisites:**
+- Python 3.8+
+- `earthengine-api` (see `requirements.txt` for dependencies)
+- Approved Google Earth Engine account with CLI authentication configured (`earthengine authenticate`)
+- Access to a Google Drive folder for NDVI exports
 
+**How to run:**
+1. Install dependencies: `pip install -r requirements.txt`.
+2. Authenticate Earth Engine: `earthengine authenticate` (or `earthengine authenticate --quiet` for headless environments).
+3. Update the region geometry, years, and export parameters in the script as needed.
+4. Execute `python 2_Scripts/GEE_Python/landsat_nvdi.py` to trigger NDVI exports. Monitor progress in the Earth Engine Tasks tab or the console logs.
+
+**Output:** Annual NDVI rasters stored in your Google Drive (`GEE_Exports/NDVI_<YEAR>_Albemarle.tif`) ready for integration into spatial analyses, dashboards, or the Ghost (Forest) Stories StoryMap.
