@@ -30,6 +30,8 @@ Explore the companion StoryMap, **[Ghost (Forest) Stories](https://storymaps.arc
 ## Quickstart
 **What the script does:** `2_Scripts/GEE_Python/landsat_nvdi.py` authenticates with Google Earth Engine, merges Landsat 5/7/8 collections, computes annual median NDVI composites for the Albemarle Peninsula, and exports them to Google Drive for mapping and scenario evaluation. 【F:2_Scripts/GEE_Python/landsat_nvdi.py†L1-L143】
 
+> 📘 Looking for a detailed walkthrough? See [docs/gee-workflow.md](docs/gee-workflow.md) for step-by-step guidance on configuring Earth Engine parameters, running the export script, and aligning outputs with the StoryMap.
+
 **Prerequisites:**
 - Python 3.8+
 - `earthengine-api` (see `requirements.txt` for dependencies)
