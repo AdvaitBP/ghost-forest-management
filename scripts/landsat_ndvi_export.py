@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-landsat_ndvi.py
----------------
-A robust script to generate NDVI composites (median) for multiple Landsat collections 
+landsat_ndvi_export.py
+----------------------
+A robust script to generate NDVI composites (median) for multiple Landsat collections
 across a range of years, apply cloud masking, and export to Google Drive.
 
 Usage:
   1) Activate your Python environment (venv).
   2) Ensure 'earthengine-api' is installed and Earth Engine is authenticated.
-  3) Run: python landsat_ndvi.py
+  3) Run: python scripts/landsat_ndvi_export.py
 """
 
 import ee
-import datetime
 import sys
 
 # ------------------------ USER CONFIGURATIONS ------------------------
