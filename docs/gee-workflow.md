@@ -9,7 +9,7 @@ This guide walks through the Google Earth Engine (GEE) workflow used to generate
 - **Google Drive access:** Ensure you have a Drive folder available for receiving Earth Engine exports (e.g., `GEE_Exports`). Verify that your account has sufficient storage space.
 
 ## Configure Workflow Parameters
-The primary automation lives in `2_Scripts/GEE_Python/landsat_nvdi.py`. Edit the variables in the `if __name__ == "__main__":` block to match your study area and output preferences.
+The primary automation lives in `scripts/landsat_ndvi_export.py`. Edit the variables in the `if __name__ == "__main__":` block to match your study area and output preferences.
 
 1. **Year range:** Update the `YEARS` list to the range of analysis years you need. Example: `YEARS = list(range(1985, 2024))`.
 2. **Region of interest:** Replace `REGION` with a valid Earth Engine geometry describing your project boundary. You can:
@@ -21,7 +21,7 @@ The primary automation lives in `2_Scripts/GEE_Python/landsat_nvdi.py`. Edit the
 ## Run the Script
 1. Activate your Python environment and ensure `earthengine-api` is installed.
 2. Authenticate with Earth Engine if you have not already (`earthengine authenticate`).
-3. Execute the workflow: `python 2_Scripts/GEE_Python/landsat_nvdi.py`.
+3. Execute the workflow: `python scripts/landsat_ndvi_export.py`.
 4. Monitor the console output. Each year’s export will appear in the Earth Engine Tasks tab; click **Run** if manual confirmation is required.
 5. Wait for the tasks to finish. Earth Engine will write each GeoTIFF to the specified Google Drive folder.
 
